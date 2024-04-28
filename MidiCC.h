@@ -11,11 +11,11 @@
 
 #define CCphaserDepth 8
 #define CCmodWheel 9
-#define CClfoSync 10  
+#define CClfoSyncSW 10  
 #define CCvoiceModDestVCA 11
 #define CClfoInitialAmount 12
-#define CCarpMode 13
-#define CCarpRange 14
+#define CCosc3Square 13
+#define CCosc3Triangle 14
 #define CCosc2Frequency 15
 #define CChpfCutoff1 16
 #define CClfoSpeed 17
@@ -33,9 +33,9 @@
 #define CCkeyboardControlSW 32
 #define CCvcfDecay 33
 #define CCvcfAttack 34
-#define CCosc3PW  35
+#define CCosc3PW 35
 #define CCphaserSpeed 36
-#define CCosc3Frequency  37
+#define CCosc3Frequency 37
 #define CCvcfSustain 38
 #define CCvcfRelease 39
 #define CCvcaDecay 40
@@ -50,14 +50,14 @@
 #define CCphaserSW 49
 #define CClfoDestPW3 50
 #define CClfoDestFilter 51
-#define CCechoTime  52
-#define CCechoRegen  53
-#define CCechoDamp  54
+#define CCechoTime 52
+#define CCechoRegen 53
+#define CCechoDamp 54
 #define CCechoLevel 55
-#define CCreverbType 56
+#define CCechoSyncSW 56
 #define CCreverbDecay 57
-#define CCreverbDamp  58
-#define CCreverbLevel  59
+#define CCreverbDamp 58
+#define CCreverbLevel 59
 #define CCarpSpeed 61
 #define CClfoDestOsc1 63
 #define CCoscSyncSW 64
@@ -86,8 +86,8 @@
 #define CCarpHold 87
 #define CCarpSync 88
 #define CCmultTrig 89
-#define CCmonoSW 90
-#define CCpolySW 91
+#define CCslopeSW 90
+#define CCechoSW 91
 #define CCglideSW 92
 #define CCnumberOfVoices 93
 #define CCoctaveDown 94
@@ -124,14 +124,50 @@
 #define CCensembleSW 125
 #define CClowSW 126
 
-#define CCosc3Square 138
-#define CCosc3Triangle 139
-#define CCslopeSW 140
-#define CCechoSW 141
-#define CCechoSyncSW 142
+#define CCmaxVoicesExitSW 128
+#define CCpolyExitSW 129
+#define CCmonoExitSW 130
+#define CCarpRangeExitSW 131
+#define CCarpModeExitSW 132
+#define CCreverbTypeExitSW 133
+#define CCarpModeSW 134
+#define CCarpRangeSW 135
+#define CCreverbType 136
+#define CCmonoSW 137
+#define CCpolySW 138
+
+
+
+
 #define CCreleaseSW 143
 #define CCkeyboardFollowSW 144
 #define CCunconditionalContourSW 145
 #define CCreturnSW 146
+
+// ASCII code sending
+
+#define MIDIreverbTypeSW 1      // A
+#define MIDIarpRangeSW 2        // B
+#define MIDIarpModeSW 3         // C
+#define MIDIpolySW 4            // D
+#define MIDImonoSW 5            // E
+#define MIDI_F_SW 6             // F
+#define MIDI_G_SW 7             // G
+#define MIDI_H_SW 8             // H
+#define MIDI_I_SW 9             // I
+#define MIDI_J_SW 10            // J
+#define MIDI_K_SW 11            // K
+#define MIDI_L_SW 12            // L
+#define MIDI_M_SW 13            // M
+#define MIDI_N_SW 14            // N
+#define MIDI_O_SW 15            // O
+#define MIDI_P_SW 16            // P
+#define MIDI_Q_SW 17            // Q
+#define MIDI_R_SW 18            // R
+#define MIDImaxVoicesSW 19      // S
+#define MIDIEnter 100
+#define MIDIEscape 101
+#define MIDIUpArrow 102
+#define MIDIDownArrow 103
 
 

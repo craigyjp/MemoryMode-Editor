@@ -63,6 +63,7 @@ MIDIDevice midi1(myusb);
 
 //MIDI 5 Pin DIN
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial6, MIDI6);
 
 #define OCTO_TOTAL 10
 #define BTN_DEBOUNCE 50
@@ -96,6 +97,13 @@ void setup() {
   SPI.begin();
   octoswitch.begin(PIN_DATA, PIN_LOAD, PIN_CLK);
   octoswitch.setCallback(onButtonPress);
+  octoswitch.setIgnoreAfterHold(NUM_OF_VOICES_SW, true);
+  octoswitch.setIgnoreAfterHold(POLY_SW, true);
+  octoswitch.setIgnoreAfterHold(MONO_SW, true);
+  octoswitch.setIgnoreAfterHold(ARP_MODE_SW, true);
+  octoswitch.setIgnoreAfterHold(ARP_RANGE_SW, true);
+
+  octoswitch.setIgnoreAfterHold(REVERB_TYPE_SW, true);
   sr.begin(LED_DATA, LED_LATCH, LED_CLK, LED_PWM);
   setupDisplay();
   setUpSettings();
@@ -160,6 +168,9 @@ void setup() {
   MIDI.setHandleAfterTouchChannel(myAfterTouch);
   Serial.println("MIDI In DIN Listening");
 
+  MIDI6.begin();
+  Serial.println("MIDI In DIN Listening");
+
   //Read Encoder Direction from EEPROM
   encCW = getEncoderDir();
   //Read MIDI Out Channel from EEPROM
@@ -221,9 +232,79 @@ void allNotesOff() {
 }
 
 void updatearpMode() {
+    if (arpModeSW == 1 && arpModeFirstPress == 0) {
+    arpMode_timer = millis();
+    arpMode = 0;
+    sr.writePin(ARP_MODE_LED, HIGH);  // LED on
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Arp Mode", arpMode);
+    }
+    midi6CCOut(MIDIarpModeSW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    arpModeFirstPress++;
+  } else if (arpModeSW == 1 && arpModeFirstPress > 0) {
+    arpMode++;
+    if (arpMode > 3) {
+      arpMode = 0;
+    }
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Arp Mode", arpMode);
+    }
+    midi6CCOut(MIDIDownArrow, 127);
+    arpModeFirstPress++;
+    arpMode_timer = millis();
+  }
+}
+
+void updatearpModeExitSW() {
+  if (arpModeExitSW == 1) {
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Arp Mode", arpMode);
+    }
+    midi6CCOut(MIDIEnter, 127);
+    arpModeFirstPress = 0;
+    arpModeSW = 0;
+    arpModeExitSW = 0;
+    sr.writePin(ARP_MODE_LED, LOW);  // LED on
+  }
 }
 
 void updatearpRange() {
+  if (arpRangeSW == 1 && arpRangeFirstPress == 0) {
+    arpRange_timer = millis();
+    arpRange = 0;
+    sr.writePin(ARP_RANGE_LED, HIGH);  // LED on
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Arp Range", arpRange);
+    }
+    midi6CCOut(MIDIarpRangeSW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    arpRangeFirstPress++;
+  } else if (arpRangeSW == 1 && arpRangeFirstPress > 0) {
+    arpRange++;
+    if (arpRange > 3) {
+      arpRange = 0;
+    }
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Arp Range", arpRange);
+    }
+    midi6CCOut(MIDIDownArrow, 127);
+    arpRangeFirstPress++;
+    arpRange_timer = millis();
+  }
+}
+
+void updatearpRangeExitSW() {
+  if (arpRangeExitSW == 1) {
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Arp Range", arpRange);
+    }
+    midi6CCOut(MIDIEnter, 127);
+    arpRangeFirstPress = 0;
+    arpRangeSW = 0;
+    arpRangeExitSW = 0;
+    sr.writePin(ARP_RANGE_LED, LOW);  // LED on
+  }
 }
 
 void updatemodWheel() {
@@ -584,7 +665,7 @@ void updatelfoInvert() {
       showCurrentParameterPage("LFO Invert", "On");
     }
     sr.writePin(LFO_INVERT_LED, HIGH);
-    midiCCOut(CClfoInvert, CC_ON);
+    midiCCOut(CClfoInvert, 127);
     midiCCOut(CClfoInvert, 0);
   } else {
     sr.writePin(LFO_INVERT_LED, LOW);
@@ -603,7 +684,7 @@ void updatecontourOsc3Amt() {
       showCurrentParameterPage("Contoured Osc", "3 Amount");
     }
     sr.writePin(CONT_OSC3_AMOUNT_LED, HIGH);
-    midiCCOut(CCcontourOsc3Amt, CC_ON);
+    midiCCOut(CCcontourOsc3Amt, 127);
     midiCCOut(CCcontourOsc3Amt, 0);
   } else {
     sr.writePin(CONT_OSC3_AMOUNT_LED, LOW);
@@ -622,7 +703,7 @@ void updatevoiceModToFilter() {
       showCurrentParameterPage("VOICE MOD TO FILTER", "On");
     }
     sr.writePin(VOICE_MOD_DEST_FILTER_LED, HIGH);
-    midiCCOut(CCvoiceModToFilter, CC_ON);
+    midiCCOut(CCvoiceModToFilter, 127);
     midiCCOut(CCvoiceModToFilter, 0);
   } else {
     sr.writePin(VOICE_MOD_DEST_FILTER_LED, LOW);
@@ -641,7 +722,7 @@ void updatevoiceModToPW2() {
       showCurrentParameterPage("VOICE MOD TO PW2", "On");
     }
     sr.writePin(VOICE_MOD_DEST_PW2_LED, HIGH);
-    midiCCOut(CCvoiceModToPW2, CC_ON);
+    midiCCOut(CCvoiceModToPW2, 127);
     midiCCOut(CCvoiceModToPW2, 0);
   } else {
     sr.writePin(VOICE_MOD_DEST_PW2_LED, LOW);
@@ -660,7 +741,7 @@ void updatevoiceModToPW1() {
       showCurrentParameterPage("VOICE MOD TO PW1", "On");
     }
     sr.writePin(VOICE_MOD_DEST_PW1_LED, HIGH);
-    midiCCOut(CCvoiceModToPW1, CC_ON);
+    midiCCOut(CCvoiceModToPW1, 127);
     midiCCOut(CCvoiceModToPW1, 0);
   } else {
     sr.writePin(VOICE_MOD_DEST_PW1_LED, LOW);
@@ -715,7 +796,7 @@ void updatearpSW() {
       showCurrentParameterPage("ARPEGGIATOR ON", "");
     }
     sr.writePin(ARP_ON_OFF_LED, HIGH);  // LED on
-    midiCCOut(CCarpSW, CC_ON);
+    midiCCOut(CCarpSW, 127);
     midiCCOut(CCarpSW, 0);
   } else {
     sr.writePin(ARP_ON_OFF_LED, LOW);  // LED off
@@ -782,12 +863,162 @@ void updatemultTrig() {
 }
 
 void updatemonoSW() {
+    if (monoSW == 1 && monoFirstPress == 0) {
+    mono_timer = millis();
+    mono = 0;
+    sr.writePin(MONO_LED, HIGH);  // LED on
+    sr.writePin(POLY_LED, LOW);  // LED on
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Mono Mode", mono);
+    }
+    midi6CCOut(MIDImonoSW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    monoFirstPress++;
+  } else if (monoSW == 1 && monoFirstPress > 0) {
+    mono++;
+    if (mono > 3) {
+      mono = 0;
+    }
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Mono Mode", mono);
+    }
+    midi6CCOut(MIDIDownArrow, 127);
+    monoFirstPress++;
+    mono_timer = millis();
+  }
+}
+
+void updatemonoExitSW() {
+  if (monoExitSW == 1) {
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Mono Mode", mono);
+    }
+    midi6CCOut(MIDIEnter, 127);
+    monoFirstPress = 0;
+    monoSW = 0;
+    monoExitSW = 0;
+  }
 }
 
 void updatepolySW() {
+  if (polySW == 1 && polyFirstPress == 0) {
+    poly_timer = millis();
+    poly = 0;
+    sr.writePin(POLY_LED, HIGH);  // LED on
+    sr.writePin(MONO_LED, LOW);  // LED on
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Poly Mode", poly);
+    }
+    midi6CCOut(MIDIpolySW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    polyFirstPress++;
+  } else if (polySW == 1 && polyFirstPress > 0) {
+    poly++;
+    if (poly > 3) {
+      poly = 0;
+    }
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Poly Mode", poly);
+    }
+    midi6CCOut(MIDIDownArrow, 127);
+    polyFirstPress++;
+    poly_timer = millis();
+  }
+}
+
+void updatepolyExitSW() {
+  if (polyExitSW == 1) {
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Poly Mode", poly);
+    }
+    midi6CCOut(MIDIEnter, 127);
+    polyFirstPress = 0;
+    polySW = 0;
+    polyExitSW = 0;
+  }
 }
 
 void updatenumberOfVoices() {
+
+  if (maxVoicesSW == 1 && maxVoicesFirstPress == 0) {
+    sr.writePin(NUM_OF_VOICES_LED, HIGH);  // LED on
+    maxVoices_timer = millis();
+    maxVoices = 2;
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Max Voices", maxVoices);
+    }
+    midi6CCOut(MIDImaxVoicesSW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    maxVoicesFirstPress++;
+  } else if (maxVoicesSW == 1 && maxVoicesFirstPress > 0) {
+    maxVoices++;
+    if (maxVoices > 16) {
+      maxVoices = 2;
+    }
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Max Voices", maxVoices);
+    }
+    midi6CCOut(MIDIDownArrow, 127);
+    maxVoicesFirstPress++;
+    maxVoices_timer = millis();
+  }
+}
+
+void updatemaxVoicesExitSW() {
+  if (maxVoicesExitSW == 1) {
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Max Voices", maxVoices);
+    }
+    midi6CCOut(MIDIEnter, 127);
+    maxVoicesFirstPress = 0;
+    maxVoicesSW = 0;
+    maxVoicesExitSW = 0;
+    sr.writePin(NUM_OF_VOICES_LED, LOW);  // LED on
+    //updateMaxVoicesDisplay(maxVoices);
+  }
+}
+
+void sendEscapeKey() {
+
+  if ((maxVoices_timer > 0) && (millis() - maxVoices_timer > 5000)) {
+    midi6CCOut(MIDIEscape, 127);
+    maxVoices_timer = 0;
+    maxVoicesFirstPress = 0;
+    sr.writePin(NUM_OF_VOICES_LED, LOW);  // LED on
+  }
+
+  if ((poly_timer > 0) && (millis() - poly_timer > 5000)) {
+    midi6CCOut(MIDIEscape, 127);
+    poly_timer = 0;
+    polyFirstPress = 0;
+  }
+
+  if ((mono_timer > 0) && (millis() - mono_timer > 5000)) {
+    midi6CCOut(MIDIEscape, 127);
+    mono_timer = 0;
+    monoFirstPress = 0;
+  }
+
+  if ((arpRange_timer > 0) && (millis() - arpRange_timer > 5000)) {
+    midi6CCOut(MIDIEscape, 127);
+    arpRange_timer = 0;
+    arpRangeFirstPress = 0;
+    sr.writePin(ARP_RANGE_LED, LOW);  // LED on
+  }
+
+  if ((arpMode_timer > 0) && (millis() - arpMode_timer > 5000)) {
+    midi6CCOut(MIDIEscape, 127);
+    arpMode_timer = 0;
+    arpModeFirstPress = 0;
+    sr.writePin(ARP_MODE_LED, LOW);  // LED on
+  }
+
+  if ((reverbType_timer > 0) && (millis() - reverbType_timer > 5000)) {
+    midi6CCOut(MIDIEscape, 127);
+    reverbType_timer = 0;
+    reverbTypeFirstPress = 0;
+    sr.writePin(REVERB_TYPE_LED, LOW);  // LED on
+  }
 }
 
 void updateglideSW() {
@@ -946,6 +1177,24 @@ void updatelfoSampleHold() {
     lfoRamp = 0;
     lfoSquare = 0;
     midiCCOut(CClfoSampleHold, 127);
+  }
+}
+
+void updatelfoSyncSW() {
+  if (lfoSyncSW == 1) {
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("LFO SYNC", "On");
+    }
+    sr.writePin(LFO_SYNC_LED, HIGH);  // LED on
+    midiCCOut(CClfoSyncSW, 127);
+    midiCCOut(CClfoSyncSW, 0);
+  } else {
+    sr.writePin(LFO_SYNC_LED, LOW);  // LED off
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("LFO SYNC", "Off");
+      midiCCOut(CClfoSyncSW, 127);
+      midiCCOut(CClfoSyncSW, 0);
+    }
   }
 }
 
@@ -1201,10 +1450,12 @@ void updateosc2Saw() {
   if (osc2Saw == 1) {
     sr.writePin(OSC2_SAW_LED, HIGH);
     midiCCOut(CCosc2Saw, 127);
+    midiCCOut(CCosc2Saw, 0);
   } else {
     sr.writePin(OSC2_SAW_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       midiCCOut(CCosc2Saw, 127);
+      midiCCOut(CCosc2Saw, 0);
     }
   }
 }
@@ -1213,10 +1464,12 @@ void updateosc2Square() {
   if (osc2Square == 1) {
     sr.writePin(OSC2_SQUARE_LED, HIGH);
     midiCCOut(CCosc2Square, 127);
+    midiCCOut(CCosc2Square, 0);
   } else {
     sr.writePin(OSC2_SQUARE_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       midiCCOut(CCosc2Square, 127);
+      midiCCOut(CCosc2Square, 0);
     }
   }
 }
@@ -1225,10 +1478,12 @@ void updateosc2Triangle() {
   if (osc2Triangle == 1) {
     sr.writePin(OSC2_TRIANGLE_LED, HIGH);
     midiCCOut(CCosc2Triangle, 127);
+    midiCCOut(CCosc2Triangle, 0);
   } else {
     sr.writePin(OSC2_TRIANGLE_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       midiCCOut(CCosc2Triangle, 127);
+      midiCCOut(CCosc2Triangle, 0);
     }
   }
 }
@@ -1237,10 +1492,12 @@ void updateosc1Saw() {
   if (osc1Saw == 1) {
     sr.writePin(OSC1_SAW_LED, HIGH);
     midiCCOut(CCosc1Saw, 127);
+    midiCCOut(CCosc1Saw, 0);
   } else {
     sr.writePin(OSC1_SAW_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       midiCCOut(CCosc1Saw, 127);
+      midiCCOut(CCosc1Saw, 0);
     }
   }
 }
@@ -1249,10 +1506,12 @@ void updateosc1Square() {
   if (osc1Square == 1) {
     sr.writePin(OSC1_SQUARE_LED, HIGH);
     midiCCOut(CCosc1Square, 127);
+    midiCCOut(CCosc1Square, 0);
   } else {
     sr.writePin(OSC1_SQUARE_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       midiCCOut(CCosc1Square, 127);
+      midiCCOut(CCosc1Square, 0);
     }
   }
 }
@@ -1261,10 +1520,12 @@ void updateosc1Triangle() {
   if (osc1Triangle == 1) {
     sr.writePin(OSC1_TRIANGLE_LED, HIGH);
     midiCCOut(CCosc1Triangle, 127);
+    midiCCOut(CCosc1Triangle, 0);
   } else {
     sr.writePin(OSC1_TRIANGLE_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       midiCCOut(CCosc1Triangle, 127);
+      midiCCOut(CCosc1Triangle, 0);
     }
   }
 }
@@ -1273,10 +1534,12 @@ void updateosc3Saw() {
   if (osc3Saw == 1) {
     sr.writePin(OSC3_SAW_LED, HIGH);
     midiCCOut(CCosc3Saw, 127);
+    midiCCOut(CCosc3Saw, 0);
   } else {
     sr.writePin(OSC3_SAW_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       midiCCOut(CCosc3Saw, 127);
+      midiCCOut(CCosc3Saw, 0);
     }
   }
 }
@@ -1285,10 +1548,12 @@ void updateosc3Square() {
   if (osc3Square == 1) {
     sr.writePin(OSC3_SQUARE_LED, HIGH);
     midiCCOut(CCosc3Square, 127);
+    midiCCOut(CCosc3Square, 0);
   } else {
     sr.writePin(OSC3_SQUARE_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       midiCCOut(CCosc3Square, 127);
+      midiCCOut(CCosc3Square, 0);
     }
   }
 }
@@ -1297,10 +1562,12 @@ void updateosc3Triangle() {
   if (osc3Triangle == 1) {
     sr.writePin(OSC3_TRIANGLE_LED, HIGH);
     midiCCOut(CCosc3Triangle, 127);
+    midiCCOut(CCosc3Triangle, 0);
   } else {
     sr.writePin(OSC3_TRIANGLE_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       midiCCOut(CCosc3Triangle, 127);
+      midiCCOut(CCosc3Triangle, 0);
     }
   }
 }
@@ -1350,11 +1617,13 @@ void updateechoSyncSW() {
     }
     sr.writePin(ECHO_SYNC_LED, HIGH);  // LED on
     midiCCOut(CCechoSyncSW, 127);
+    midiCCOut(CCechoSyncSW, 0);
   } else {
     sr.writePin(ECHO_SYNC_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       showCurrentParameterPage("ECHO SYNC OFF", "");
       midiCCOut(CCechoSyncSW, 127);
+      midiCCOut(CCechoSyncSW, 0);
     }
   }
 }
@@ -1430,17 +1699,54 @@ void updatereverbSW() {
     }
     sr.writePin(REVERB_ON_OFF_LED, HIGH);  // LED on
     midiCCOut(CCreverbSW, 127);
+    midiCCOut(CCreverbSW, 0);
   } else {
     sr.writePin(REVERB_ON_OFF_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       showCurrentParameterPage("REVERB OFF", "");
+      midiCCOut(CCreverbSW, 127);
       midiCCOut(CCreverbSW, 0);
     }
   }
 }
 
 void updatereverbTypeSW() {
-  if (reverbTypeSW == 1) {
+
+    if (reverbTypeSW == 1 && reverbTypeFirstPress == 0) {
+    reverbType_timer = millis();
+    reverbType = 0;
+    sr.writePin(REVERB_TYPE_LED, HIGH);  // LED on
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Arp Mode", reverbType);
+    }
+    midi6CCOut(MIDIreverbTypeSW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    reverbTypeFirstPress++;
+  } else if (reverbTypeSW == 1 && reverbTypeFirstPress > 0) {
+    reverbType++;
+    if (reverbType > 2) {
+      reverbType = 0;
+    }
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Arp Mode", reverbType);
+    }
+    midi6CCOut(MIDIDownArrow, 127);
+    reverbTypeFirstPress++;
+    reverbType_timer = millis();
+  }
+
+}
+
+void updatereverbTypeExitSW() {
+  if (reverbTypeExitSW == 1) {
+    if (!recallPatchFlag) {
+      showCurrentParameterPage("Reverb Type", reverbType);
+    }
+    midi6CCOut(MIDIEnter, 127);
+    reverbTypeFirstPress = 0;
+    reverbTypeSW = 0;
+    reverbTypeExitSW = 0;
+    sr.writePin(REVERB_TYPE_LED, LOW);  // LED on
   }
 }
 
@@ -1451,10 +1757,12 @@ void updatelimitSW() {
     }
     sr.writePin(LIMIT_LED, HIGH);  // LED on
     midiCCOut(CClimitSW, 127);
+    midiCCOut(CClimitSW, 0);
   } else {
     sr.writePin(LIMIT_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       showCurrentParameterPage("LIMIT OFF", "");
+      midiCCOut(CClimitSW, 127);
       midiCCOut(CClimitSW, 0);
     }
   }
@@ -1467,10 +1775,12 @@ void updatemodernSW() {
     }
     sr.writePin(MODERN_LED, HIGH);  // LED on
     midiCCOut(CCmodernSW, 127);
+    midiCCOut(CCmodernSW, 0);
   } else {
     sr.writePin(MODERN_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       showCurrentParameterPage("VINTAGE MODE", "");
+      midiCCOut(CCmodernSW, 127);
       midiCCOut(CCmodernSW, 0);
     }
   }
@@ -1535,10 +1845,12 @@ void updateensembleSW() {
     }
     sr.writePin(ENSEMBLE_LED, HIGH);  // LED on
     midiCCOut(CCensembleSW, 127);
+    midiCCOut(CCensembleSW, 0);
   } else {
     sr.writePin(ENSEMBLE_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       showCurrentParameterPage("ENSEMBLE OFF", "");
+      midiCCOut(CCensembleSW, 127);
       midiCCOut(CCensembleSW, 0);
     }
   }
@@ -1551,10 +1863,12 @@ void updatelowSW() {
     }
     sr.writePin(LOW_LED, HIGH);  // LED on
     midiCCOut(CClowSW, 127);
+    midiCCOut(CClowSW, 0);
   } else {
     sr.writePin(LOW_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       showCurrentParameterPage("LOW FREQ OFF", "");
+      midiCCOut(CClowSW, 127);
       midiCCOut(CClowSW, 0);
     }
   }
@@ -1567,10 +1881,12 @@ void updatekeyboardControlSW() {
     }
     sr.writePin(KEYBOARD_CONTROL_LED, HIGH);  // LED on
     midiCCOut(CCkeyboardControlSW, 127);
+    midiCCOut(CCkeyboardControlSW, 0);
   } else {
     sr.writePin(KEYBOARD_CONTROL_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       showCurrentParameterPage("OSC 3 KEYBOARD", "CONTROL OFF");
+      midiCCOut(CCkeyboardControlSW, 127);
       midiCCOut(CCkeyboardControlSW, 0);
     }
   }
@@ -1583,10 +1899,12 @@ void updateoscSyncSW() {
     }
     sr.writePin(OSC_SYNC_LED, HIGH);  // LED on
     midiCCOut(CCoscSyncSW, 127);
+    midiCCOut(CCoscSyncSW, 0);
   } else {
     sr.writePin(OSC_SYNC_LED, LOW);  // LED off
     if (!recallPatchFlag) {
       showCurrentParameterPage("OSC SYNC 2 TO 1 OFF", "");
+      midiCCOut(CCoscSyncSW, 127);
       midiCCOut(CCoscSyncSW, 0);
     }
   }
@@ -1598,7 +1916,7 @@ void updatevoiceModDestVCA() {
       showCurrentParameterPage("  VOICE MOD TO AMP", "On");
     }
     sr.writePin(VOICE_MOD_DEST_VCA_LED, HIGH);
-    midiCCOut(CCvoiceModDestVCA, CC_ON);
+    midiCCOut(CCvoiceModDestVCA, 127);
     midiCCOut(CCvoiceModDestVCA, 0);
   } else {
     sr.writePin(VOICE_MOD_DEST_VCA_LED, LOW);
@@ -1616,7 +1934,7 @@ void updatephaserSW() {
       showCurrentParameterPage("      PHASER ON", "");
     }
     sr.writePin(PHASER_LED, HIGH);
-    midiCCOut(CCphaserSW, CC_ON);
+    midiCCOut(CCphaserSW, 127);
     midiCCOut(CCphaserSW, 0);
   } else {
     sr.writePin(PHASER_LED, LOW);
@@ -1634,7 +1952,7 @@ void updatelfoDestFilter() {
       showCurrentParameterPage("LFO TO FILTER", "On");
     }
     sr.writePin(LFO_DEST_FILTER_LED, HIGH);
-    midiCCOut(CClfoDestFilter, CC_ON);
+    midiCCOut(CClfoDestFilter, 127);
     midiCCOut(CClfoDestFilter, 0);
   } else {
     sr.writePin(LFO_DEST_FILTER_LED, LOW);
@@ -1652,7 +1970,7 @@ void updatelfoDestPW3() {
       showCurrentParameterPage("LFO TO PW3", "On");
     }
     sr.writePin(LFO_DEST_PW3_LED, HIGH);
-    midiCCOut(CClfoDestPW3, CC_ON);
+    midiCCOut(CClfoDestPW3, 127);
     midiCCOut(CClfoDestPW3, 0);
   } else {
     sr.writePin(LFO_DEST_PW3_LED, LOW);
@@ -1987,14 +2305,24 @@ void myControlChange(byte channel, byte control, int value) {
       updatevoiceModDestVCA();
       break;
 
-    case CCarpMode:
-      value > 0 ? arpMode = 1 : arpMode = 0;
+    case CCarpModeSW:
+      value > 0 ? arpModeSW = 1 : arpModeSW = 0;
       updatearpMode();
       break;
 
-    case CCarpRange:
-      value > 0 ? arpRange = 1 : arpRange = 0;
+    case CCarpModeExitSW:
+      value > 0 ? arpModeExitSW = 1 : arpModeExitSW = 0;
+      updatearpModeExitSW();
+      break;
+
+    case CCarpRangeSW:
+      value > 0 ? arpRangeSW = 1 : arpRangeSW = 0;
       updatearpRange();
+      break;
+
+    case CCarpRangeExitSW:
+      value > 0 ? arpRangeExitSW = 1 : arpRangeExitSW = 0;
+      updatearpRangeExitSW();
       break;
 
     case CCphaserSW:
@@ -2052,9 +2380,19 @@ void myControlChange(byte channel, byte control, int value) {
       updatemonoSW();
       break;
 
+    case CCmonoExitSW:
+      value > 0 ? monoExitSW = 1 : monoExitSW = 0;
+      updatemonoExitSW();
+      break;
+
     case CCpolySW:
       polySW = value;
       updatepolySW();
+      break;
+
+    case CCpolyExitSW:
+      value > 0 ? polyExitSW = 1 : polyExitSW = 0;
+      updatepolyExitSW();
       break;
 
     case CCglideSW:
@@ -2063,8 +2401,13 @@ void myControlChange(byte channel, byte control, int value) {
       break;
 
     case CCnumberOfVoices:
-      numberOfVoices = value;
+      value > 0 ? maxVoicesSW = 1 : maxVoicesSW = 0;
       updatenumberOfVoices();
+      break;
+
+    case CCmaxVoicesExitSW:
+      value > 0 ? maxVoicesExitSW = 1 : maxVoicesExitSW = 0;
+      updatemaxVoicesExitSW();
       break;
 
     case CCoctaveDown:
@@ -2110,6 +2453,11 @@ void myControlChange(byte channel, byte control, int value) {
     case CClfoSampleHold:
       lfoSampleHold = value;
       updatelfoSampleHold();
+      break;
+
+    case CClfoSyncSW:
+      value > 0 ? lfoSyncSW = 1 : lfoSyncSW = 0;
+      updatelfoSyncSW();
       break;
 
     case CClfoKeybReset:
@@ -2290,6 +2638,11 @@ void myControlChange(byte channel, byte control, int value) {
     case CCreverbTypeSW:
       reverbTypeSW = value;
       updatereverbTypeSW();
+      break;
+
+    case CCreverbTypeExitSW:
+      value > 0 ? reverbTypeExitSW = 1 : reverbTypeExitSW = 0;
+      updatereverbTypeExitSW();
       break;
 
     case CClimitSW:
@@ -2574,6 +2927,7 @@ void setCurrentPatchData(String data[]) {
   updatelfoSquare();
   updatelfoSampleHold();
   updatelfoKeybReset();
+  updatelfoSyncSW();
   updatewheelDC();
   updatelfoDestOsc1();
   updatelfoDestOsc2();
@@ -2848,14 +3202,24 @@ void onButtonPress(uint16_t btnIndex, uint8_t btnType) {
     myControlChange(midiChannel, CCvoiceModDestVCA, voiceModDestVCA);
   }
 
-  if (btnIndex == ARP_MODE_SW && btnType == ROX_PRESSED) {
-    arpMode = !arpMode;
-    myControlChange(midiChannel, CCarpMode, arpMode);
+  if (btnIndex == ARP_MODE_SW && btnType == ROX_RELEASED) {
+    arpModeSW = 1;
+    myControlChange(midiChannel, CCarpModeSW, arpModeSW);
+  } else {
+    if (btnIndex == ARP_MODE_SW && btnType == ROX_HELD) {
+      arpModeExitSW = 1;
+      myControlChange(midiChannel, CCarpModeExitSW, arpModeExitSW);
+    }
   }
 
-  if (btnIndex == ARP_RANGE_SW && btnType == ROX_PRESSED) {
-    arpRange = !arpRange;
-    myControlChange(midiChannel, CCarpRange, arpRange);
+  if (btnIndex == ARP_RANGE_SW && btnType == ROX_RELEASED) {
+    arpRangeSW = 1;
+    myControlChange(midiChannel, CCarpRangeSW, arpRangeSW);
+  } else {
+    if (btnIndex == ARP_RANGE_SW && btnType == ROX_HELD) {
+      arpRangeExitSW = 1;
+      myControlChange(midiChannel, CCarpRangeExitSW, arpRangeExitSW);
+    }
   }
 
   if (btnIndex == PHASER_SW && btnType == ROX_PRESSED) {
@@ -2908,24 +3272,40 @@ void onButtonPress(uint16_t btnIndex, uint8_t btnType) {
     myControlChange(midiChannel, CCmultTrig, multTrig);
   }
 
-  if (btnIndex == MONO_SW && btnType == ROX_PRESSED) {
+  if (btnIndex == MONO_SW && btnType == ROX_RELEASED) {
     monoSW = 1;
     myControlChange(midiChannel, CCmonoSW, monoSW);
+  } else {
+    if (btnIndex == MONO_SW && btnType == ROX_HELD) {
+      monoExitSW = 1;
+      myControlChange(midiChannel, CCmonoExitSW, monoExitSW);
+    }
   }
 
-  if (btnIndex == POLY_SW && btnType == ROX_PRESSED) {
+  if (btnIndex == POLY_SW && btnType == ROX_RELEASED) {
     polySW = 1;
     myControlChange(midiChannel, CCpolySW, polySW);
+  } else {
+    if (btnIndex == POLY_SW && btnType == ROX_HELD) {
+      polyExitSW = 1;
+      myControlChange(midiChannel, CCpolyExitSW, polyExitSW);
+    }
   }
+
 
   if (btnIndex == GLIDE_SW && btnType == ROX_PRESSED) {
     glideSW = !glideSW;
     myControlChange(midiChannel, CCglideSW, glideSW);
   }
 
-  if (btnIndex == NUM_OF_VOICES_SW && btnType == ROX_PRESSED) {
-    numberOfVoices = 1;
-    myControlChange(midiChannel, CCnumberOfVoices, numberOfVoices);
+  if (btnIndex == NUM_OF_VOICES_SW && btnType == ROX_RELEASED) {
+    maxVoicesSW = 1;
+    myControlChange(midiChannel, CCnumberOfVoices, maxVoicesSW);
+  } else {
+    if (btnIndex == NUM_OF_VOICES_SW && btnType == ROX_HELD) {
+      maxVoicesExitSW = 1;
+      myControlChange(midiChannel, CCmaxVoicesExitSW, maxVoicesExitSW);
+    }
   }
 
   if (btnIndex == OCTAVE_MINUS_SW && btnType == ROX_PRESSED) {
@@ -2971,6 +3351,11 @@ void onButtonPress(uint16_t btnIndex, uint8_t btnType) {
   if (btnIndex == LFO_SAMPLE_HOLD_SW && btnType == ROX_PRESSED) {
     lfoSampleHold = 1;
     myControlChange(midiChannel, CClfoSampleHold, lfoSampleHold);
+  }
+
+  if (btnIndex == LFO_SYNC_SW && btnType == ROX_PRESSED) {
+    lfoSyncSW = !lfoSyncSW;
+    myControlChange(midiChannel, CClfoSyncSW, lfoSyncSW);
   }
 
   if (btnIndex == LFO_KEYB_RESET_SW && btnType == ROX_PRESSED) {
@@ -3148,9 +3533,14 @@ void onButtonPress(uint16_t btnIndex, uint8_t btnType) {
     myControlChange(midiChannel, CCreverbSW, reverbSW);
   }
 
-  if (btnIndex == REVERB_TYPE_SW && btnType == ROX_PRESSED) {
+  if (btnIndex == REVERB_TYPE_SW && btnType == ROX_RELEASED) {
     reverbTypeSW = 1;
     myControlChange(midiChannel, CCreverbTypeSW, reverbTypeSW);
+  } else {
+    if (btnIndex == REVERB_TYPE_SW && btnType == ROX_HELD) {
+      reverbTypeExitSW = 1;
+      myControlChange(midiChannel, CCreverbTypeExitSW, reverbTypeExitSW);
+    }
   }
 
   if (btnIndex == LIMIT_SW && btnType == ROX_PRESSED) {
@@ -3208,67 +3598,18 @@ void showSettingsPage() {
   showSettingsPage(settings::current_setting(), settings::current_setting_value(), state);
 }
 
+void midi6CCOut(byte cc, byte value) {
+  MIDI6.sendControlChange(cc, value, midiOutCh);  //MIDI DIN is set to Out
+}
+
 void midiCCOut(byte cc, byte value) {
   if (midiOutCh > 0) {
     switch (ccType) {
       case 0:
         {
           switch (cc) {
-            case CCvoiceModDestVCA:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(120, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(120, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(120, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(120, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
 
-            case CCarpMode:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(116, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(116, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(116, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(116, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCarpRange:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(117, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(117, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(117, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(117, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCphaserSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CClfoDestPW3:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(119, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(119, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(119, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(119, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CClfoDestFilter:  // strings learn
-              if (updateParams) {
-                usbMIDI.sendNoteOn(118, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(118, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(118, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(118, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCosc1Saw:
+            case CCreleaseSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(0, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(0, 0, midiOutCh);   //MIDI USB is set to Out
@@ -3277,7 +3618,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(0, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case CCosc1Square:
+            case CCkeyboardFollowSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(1, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(1, 0, midiOutCh);   //MIDI USB is set to Out
@@ -3286,7 +3627,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(1, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case CCosc1Triangle:
+            case CCunconditionalContourSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(2, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(2, 0, midiOutCh);   //MIDI USB is set to Out
@@ -3295,143 +3636,13 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(2, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case CCosc3Saw:
+            case CCreturnSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(3, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(3, 0, midiOutCh);   //MIDI USB is set to Out
               }
               MIDI.sendNoteOn(3, 127, midiOutCh);  //MIDI DIN is set to Out
               MIDI.sendNoteOff(3, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCosc3Square:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(4, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(4, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(4, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(4, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCosc3Triangle:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(5, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(5, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(5, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(5, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCslopeSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(6, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(6, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(6, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(6, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCechoSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(7, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(7, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(7, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(7, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCechoSyncSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(8, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(8, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(8, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(8, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCreleaseSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(9, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(9, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(9, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(9, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCkeyboardFollowSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(10, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(10, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(10, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(10, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCunconditionalContourSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(11, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(11, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(11, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(11, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCreturnSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(12, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(12, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(12, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(12, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCreverbSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(127, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(127, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(127, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(127, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCreverbTypeSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI DIN is set to Out
-              break;
-
-            case CClimitSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI DIN is set to Out
-              break;
-
-            case CCmodernSW:
-              // Arp UpDown
-              if (updateParams) {
-                usbMIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI DIN is set to Out
-              break;
-
-            case CCosc3_2:
-              // Arp Random
-              if (updateParams) {
-                usbMIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI DIN is set to Out
-              break;
-
-            case CCosc3_4:
-              // Arp Hold
-              if (updateParams) {
-                usbMIDI.sendNoteOn(122, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(122, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(122, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(122, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
             default:
@@ -3753,5 +3964,6 @@ void loop() {
   usbMIDI.read(midiChannel);
 
   stopLEDs();             // blink the wave LEDs once when pressed
+  sendEscapeKey();
   convertIncomingNote();  // read a note when in learn mode and use it to set the values
 }
