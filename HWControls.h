@@ -282,11 +282,11 @@ ADC *adc = new ADC();
 
 #define RECALL_SW 17
 #define SAVE_SW 41
-#define SETTINGS_SW 12
+#define SETTINGS_SW 8
 #define BACK_SW 10
 
-#define ENCODER_PINA 5
-#define ENCODER_PINB 4
+#define ENCODER_PINA 4
+#define ENCODER_PINB 5
 
 #define MUXCHANNELS 16
 #define QUANTISE_FACTOR 31

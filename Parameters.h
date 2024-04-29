@@ -7,10 +7,11 @@ int SLIDERintensity = 1;//(EEPROM)
 int oldSLIDERintensity;
 int learningDisplayNumber = 0;
 int learningNote = 0;
+boolean pot = false;
 
-static unsigned long polywave_timer = 0;
-static unsigned long vco1wave_timer = 0;
-static unsigned long vco2wave_timer = 0;
+const char* constantString = "        ";
+const char* constantString2 = "";
+
 static unsigned long learn_timer = 0;
 static unsigned long maxVoices_timer = 0;
 static unsigned long arpRange_timer = 0;
@@ -38,158 +39,154 @@ boolean sendNotes = false;  //(EEPROM)
 // New parameters
 // Pots
 
-int glide = 0;
+int glide, glide100, glidePREV;
 int glidestr = 0;
 
-int uniDetune = 0;
+int uniDetune, uniDetune100, uniDetunePREV;
 int uniDetunestr = 0;
 
-int bendDepth = 0;
+int bendDepth, bendDepthPREV, bendDepth100;
 int bendDepthstr = 0;
 
-int lfoOsc3 = 0;
+int lfoOsc3, lfoOsc3100, lfoOsc3PREV;
 int lfoOsc3str = 0;
 
-int lfoFilterContour = 0;
+int lfoFilterContour, lfoFilterContour100, lfoFilterContourPREV;
 int lfoFilterContourstr = 0;
 
-int arpSpeed = 0;
+int arpSpeed, arpSpeed100, arpSpeedPREV;
 float arpSpeedstr = 0;
 int arpSpeedmap = 0;
 String arpSpeedstring = "";
 
-int phaserSpeed = 0;
 float phaserSpeedstr = 0;
-int phaserDepth = 0;
+int phaserSpeed, phaserSpeed100, phaserSpeedPREV;
+
+int phaserDepth, phaserDepth100, phaserDepthPREV;
 int phaserDepthstr = 0;
 
-int lfoInitialAmount = 0;
+int lfoInitialAmount, lfoInitialAmount100, lfoInitialAmountPREV;
 int lfoInitialAmountstr = 0;
 
-int modWheel = 0;
+int modWheel, modWheelPREV, modWheel100;
 int modWheelstr = 0;
 
-int lfoSpeed = 0;
+int lfoSpeed, lfoSpeed100, lfoSpeedPREV;
 int lfoSpeedmap = 0;
 float lfoSpeedstr = 0;
 String lfoSpeedstring = "";
+String oldWhichParameter = "                    ";
 
-int osc2Frequency = 0;
+int osc2Frequency, osc2Frequency100, osc2FrequencyPREV;
 float osc2Frequencystr = 0;
 
-int osc2PW = 0;
+int osc2PW, osc2PW100, osc2PWPREV;
 float osc2PWstr = 0;
 
-int osc1PW = 0;
+int osc1PW, osc1PW100, osc1PWPREV;
 float osc1PWstr = 0;
 
-int osc3Frequency = 0;
+int osc3Frequency, osc3Frequency100, osc3FrequencyPREV;
 float osc3Frequencystr = 0;
 
-int osc3PW = 0;
+int osc3PW, osc3PW100, osc3PWPREV;
 float osc3PWstr = 0;
 
-int ensembleRate = 0;
+int ensembleRate, ensembleRate100, ensembleRatePREV;
 float ensembleRatestr = 0;
 
-int ensembleDepth = 0;
+int ensembleDepth, ensembleDepth100, ensembleDepthPREV;
 float ensembleDepthstr = 0;
 
-int echoTime = 0;
+int echoTime, echoTime100, echoTimePREV;
 int echoTimemap= 0;
 float echoTimestr = 0;
 String echoTimestring = "";
 
-int echoRegen = 0;
-int echoRegenmap = 0;
+int echoRegen, echoRegen100, echoRegenPREV;
 float echoRegenstr = 0;
 
-int echoDamp =0;
-int echoDampmap = 0;
+int echoDamp, echoDamp100, echoDampPREV;
 float echoDampstr = 0;
 
-int echoLevel = 0;
-int echoLevelmap = 0;
+int echoLevel, echoLevel100, echoLevelPREV;
 float echoLevelstr = 0;
 
-int reverbDecay = 0;
-int reverbDecaymap = 0;
+int reverbDecay, reverbDecay100, reverbDecayPREV;
 float reverbDecaystr = 0;
 
-int reverbDamp = 0;
-int reverbDampmap = 0;
+int reverbDamp, reverbDamp100, reverbDampPREV;
 float reverbDampstr = 0;
 
-int reverbLevel = 0;
-int reverbLevelmap = 0;
+int reverbLevel, reverbLevel100, reverbLevelPREV;
 float reverbLevelstr = 0;
 
-int masterTune = 0;
+int masterTune, masterTune100, masterTunePREV;
 int masterTunemap = 0;
 float masterTunestr = 0;
 
-int masterVolume = 0;
+int masterVolume, masterVolume100, masterVolumePREV;
 int masterVolumemap = 0;
 float masterVolumestr = 0;
 
-int echoSpread = 0;
+int echoSpread, echoSpread100, echoSpreadPREV;
 float echoSpreadstr = 0;
 
-int noise = 0;
+int noise, noise100, noisePREV;
 float noisestr = 0;
 
-int osc1Level = 0;
+int osc1Level, osc1Level100, osc1LevelPREV;
 float osc1Levelstr = 0;
 
-int osc2Level = 0;
+int osc2Level, osc2Level100, osc2LevelPREV;
 float osc2Levelstr = 0;
 
-int osc3Level = 0;
+int osc3Level, osc3Level100, osc3LevelPREV;
 float osc3Levelstr = 0;
 
-int filterCutoff = 0;
+int filterCutoff, filterCutoff100, filterCutoffPREV;
 float filterCutoffstr = 0;
 
-int emphasis = 0;
+int emphasis, emphasis100, emphasisPREV;
 float emphasisstr = 0;
 
-int vcfAttack = 0;
+int vcfAttack, vcfAttack100, vcfAttackPREV;
 float vcfAttackstr = 0;
 
-int vcfDecay = 0;
+int vcfDecay, vcfDecay100, vcfDecayPREV;
 float vcfDecaystr = 0;
 
-int vcfSustain = 0;
+int vcfSustain, vcfSustain100, vcfSustainPREV;
 float vcfSustainstr = 0;
 
-int vcfRelease = 0;
+int vcfRelease, vcfRelease100, vcfReleasePREV;
 float vcfReleasestr = 0;
 
-int vcaAttack = 0;
+int vcaAttack, vcaAttack100, vcaAttackPREV;
 float vcaAttackstr = 0;
 
-int vcaDecay = 0;
+int vcaDecay, vcaDecay100, vcaDecayPREV;
 float vcaDecaystr = 0;
 
-int vcaSustain = 0;
+int vcaSustain, vcaSustain100, vcaSustainPREV;
 float vcaSustainstr = 0;
 
-int vcaRelease = 0;
+int vcaRelease, vcaRelease100, vcaReleasePREV;
 float vcaReleasestr = 0;
 
-int vcaVelocity = 0;
+int vcaVelocity, vcaVelocity100, vcaVelocityPREV;
 float vcaVelocitystr = 0;
 
-int vcfVelocity = 0;
+int vcfVelocity, vcfVelocity100, vcfVelocityPREV;
 float vcfVelocitystr = 0;
 
-int driftAmount = 0;
+int driftAmount, driftAmount100, driftAmountPREV;
 float driftAmountstr = 0;
 
-int vcfContourAmount = 0;
+int vcfContourAmount, vcfContourAmount100, vcfContourAmountPREV;
 float vcfContourAmountstr = 0;
 
-int kbTrack = 0;
+int kbTrack, kbTrack100, kbTrackPREV;
 float kbTrackstr = 0;
 
 // Buttons
@@ -219,10 +216,14 @@ int mono = 0;
 int monoSW = 0;
 int monoExitSW = 0;
 int monoFirstPress = 0;
+int monoMode = 0;
+int prevmono = 0;
 int poly = 0;
 int polySW = 0;
 int polyExitSW = 0;
 int polyFirstPress = 0;
+int polyMode = 0;
+int prevpoly = 0;
 int glideSW = 0;
 int maxVoices = 2;
 int maxVoicesSW = 0;

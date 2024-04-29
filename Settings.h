@@ -135,7 +135,4 @@ void setUpSettings() {
   settings::append(settings::SettingsOption{"Encoder", {"Type 1", "Type 2", "\0"}, settingsEncoderDir, currentIndexEncoderDir});
   settings::append(settings::SettingsOption{"USB Params", {"Off", "Send Params", "\0"}, settingsUpdateParams, currentIndexUpdateParams});
   settings::append(settings::SettingsOption{"USB Notes", {"Off", "Send Notes", "\0"}, settingsSendNotes, currentIndexSendNotes});
-  settings::append(settings::SettingsOption{"LED Int.", {"Off", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "\0"}, settingsLEDintensity, currentIndexLEDintensity});
-  settings::append(settings::SettingsOption{"SLIDER LED", {"Off", "On", "\0"}, settingsSLIDERintensity, currentIndexSLIDERintensity});
-  //settings::append(settings::SettingsOption{"Control Type", {"CC", "NRPN", "SYSEX", "\0"}, settingsCCType, currentIndexCCType});
 }

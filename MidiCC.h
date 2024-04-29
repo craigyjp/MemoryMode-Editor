@@ -64,9 +64,9 @@
 #define CClfoInvert 65
 #define CCcontourOsc3Amt 66
 #define CCarpSW 67
-#define CCphaserSW 68
-#define CClfoDestPW3 69
-#define CClfoDestFilter 70
+
+
+
 #define CCosc1Saw 71
 #define CCosc1Square 72
 #define CCosc1Triangle 73
