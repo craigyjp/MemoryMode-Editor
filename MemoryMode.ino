@@ -282,58 +282,60 @@ void updateMOOGstyle(int PREVparam, int value, String WhichParameter) {
 void allNotesOff() {
 }
 
+void updatearpModePreset() {
+  if (arpMode != arpModePREV) {
+
+    midi6CCOut(MIDIarpModeSW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    for (int i = 1; i < arpMode; i++) {
+      delay(500);
+      midi6CCOut(MIDIDownArrow, 127);
+    }
+    delay(500);
+    midi6CCOut(MIDIEnter, 127);
+    arpModePREV = arpMode;
+  }
+}
+
+void arpModeNames() {
+      if (arpMode == 1) {
+        showCurrentParameterPage("    MODE 1 - UP", "");
+      }
+      if (arpMode == 2) {
+        showCurrentParameterPage("   MODE 2 - DOWN", "");
+      }
+      if (arpMode == 3) {
+        showCurrentParameterPage("  MODE 3 - UP-DOWN", "");
+      }
+      if (arpMode == 4) {
+        showCurrentParameterPage("MODE 4 - FIRST-LAST", "");
+      }
+      if (arpMode == 5) {
+        showCurrentParameterPage("   MODE 5 - RANDOM", "");
+      }
+      if (arpMode == 6) {
+        showCurrentParameterPage(" MODE 6 - AUTO TRIG", "");
+      }
+}
+
 void updatearpMode() {
   if (arpModeSW == 1 && arpModeFirstPress == 0) {
     arpMode_timer = millis();
-    arpMode = 0;
+    arpMode = 1;
     sr.writePin(ARP_MODE_LED, HIGH);  // LED on
     if (!recallPatchFlag) {
-      if (arpMode == 0) {
-        showCurrentParameterPage("    MODE 1 - UP", "");
-      }
-      if (arpMode == 1) {
-        showCurrentParameterPage("   MODE 2 - DOWN", "");
-      }
-      if (arpMode == 2) {
-        showCurrentParameterPage("  MODE 3 - UP-DOWN", "");
-      }
-      if (arpMode == 3) {
-        showCurrentParameterPage("MODE 4 - FIRST-LAST", "");
-      }
-      if (arpMode == 4) {
-        showCurrentParameterPage("   MODE 5 - RANDOM", "");
-      }
-      if (arpMode == 5) {
-        showCurrentParameterPage(" MODE 6 - AUTO TRIG", "");
-      }
+      arpModeNames();
     }
     midi6CCOut(MIDIarpModeSW, 127);
     midi6CCOut(MIDIDownArrow, 127);
     arpModeFirstPress++;
   } else if (arpModeSW == 1 && arpModeFirstPress > 0) {
     arpMode++;
-    if (arpMode > 5) {
-      arpMode = 0;
+    if (arpMode > 6) {
+      arpMode = 1;
     }
     if (!recallPatchFlag) {
-      if (arpMode == 0) {
-        showCurrentParameterPage("    MODE 1 - UP", "");
-      }
-      if (arpMode == 1) {
-        showCurrentParameterPage("   MODE 2 - DOWN", "");
-      }
-      if (arpMode == 2) {
-        showCurrentParameterPage("  MODE 3 - UP-DOWN", "");
-      }
-      if (arpMode == 3) {
-        showCurrentParameterPage("MODE 4 - FIRST-LAST", "");
-      }
-      if (arpMode == 4) {
-        showCurrentParameterPage("   MODE 5 - RANDOM", "");
-      }
-      if (arpMode == 5) {
-        showCurrentParameterPage(" MODE 6 - AUTO TRIG", "");
-      }
+      arpModeNames();
     }
     midi6CCOut(MIDIDownArrow, 127);
     arpModeFirstPress++;
@@ -344,24 +346,7 @@ void updatearpMode() {
 void updatearpModeExitSW() {
   if (arpModeExitSW == 1) {
     if (!recallPatchFlag) {
-      if (arpMode == 0) {
-        showCurrentParameterPage("    MODE 1 - UP", "");
-      }
-      if (arpMode == 1) {
-        showCurrentParameterPage("   MODE 2 - DOWN", "");
-      }
-      if (arpMode == 2) {
-        showCurrentParameterPage("  MODE 3 - UP-DOWN", "");
-      }
-      if (arpMode == 3) {
-        showCurrentParameterPage("MODE 4 - FIRST-LAST", "");
-      }
-      if (arpMode == 4) {
-        showCurrentParameterPage("   MODE 5 - RANDOM", "");
-      }
-      if (arpMode == 5) {
-        showCurrentParameterPage(" MODE 6 - AUTO TRIG", "");
-      }
+      arpModeNames();
     }
     midi6CCOut(MIDIEnter, 127);
     arpModeFirstPress = 0;
@@ -372,46 +357,39 @@ void updatearpModeExitSW() {
   }
 }
 
+void updatearpRangePreset() {
+  if (arpRange != arpRangePREV) {
+
+    midi6CCOut(MIDIarpRangeSW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    for (int i = 1; i < arpRange; i++) {
+      delay(500);
+      midi6CCOut(MIDIDownArrow, 127);
+    }
+    delay(500);
+    midi6CCOut(MIDIEnter, 127);
+    arpRangePREV = arpRange;
+  }
+}
+
 void updatearpRange() {
   if (arpRangeSW == 1 && arpRangeFirstPress == 0) {
     arpRange_timer = millis();
-    arpRange = 0;
+    arpRange = 1;
     sr.writePin(ARP_RANGE_LED, HIGH);  // LED on
     if (!recallPatchFlag) {
-      if (arpRange == 0) {
-        showCurrentParameterPage("     ONE OCTAVE", "");
-      }
-      if (arpRange == 1) {
-        showCurrentParameterPage("     TWO OCTAVES", "");
-      }
-      if (arpRange == 2) {
-        showCurrentParameterPage("    THREE OCTAVES", "");
-      }
-      if (arpRange == 3) {
-        showCurrentParameterPage("    FOUR OCTAVES", "");
-      }
+      arpRangeDisplay();
     }
     midi6CCOut(MIDIarpRangeSW, 127);
     midi6CCOut(MIDIDownArrow, 127);
     arpRangeFirstPress++;
   } else if (arpRangeSW == 1 && arpRangeFirstPress > 0) {
     arpRange++;
-    if (arpRange > 3) {
-      arpRange = 0;
+    if (arpRange > 4) {
+      arpRange = 1;
     }
     if (!recallPatchFlag) {
-      if (arpRange == 0) {
-        showCurrentParameterPage("     ONE OCTAVE", "");
-      }
-      if (arpRange == 1) {
-        showCurrentParameterPage("     TWO OCTAVES", "");
-      }
-      if (arpRange == 2) {
-        showCurrentParameterPage("    THREE OCTAVES", "");
-      }
-      if (arpRange == 3) {
-        showCurrentParameterPage("    FOUR OCTAVES", "");
-      }
+      arpRangeDisplay();
     }
     midi6CCOut(MIDIDownArrow, 127);
     arpRangeFirstPress++;
@@ -422,18 +400,7 @@ void updatearpRange() {
 void updatearpRangeExitSW() {
   if (arpRangeExitSW == 1) {
     if (!recallPatchFlag) {
-      if (arpRange == 0) {
-        showCurrentParameterPage("     ONE OCTAVE", "");
-      }
-      if (arpRange == 1) {
-        showCurrentParameterPage("     TWO OCTAVES", "");
-      }
-      if (arpRange == 2) {
-        showCurrentParameterPage("    THREE OCTAVES", "");
-      }
-      if (arpRange == 3) {
-        showCurrentParameterPage("    FOUR OCTAVES", "");
-      }
+      arpRangeDisplay();
     }
     midi6CCOut(MIDIEnter, 127);
     arpRangeFirstPress = 0;
@@ -451,6 +418,21 @@ void updatemodWheel() {
     //showCurrentParameterPage("Mod Wheel Amount", String(modWheelstr) + " %");
   }
   midiCCOut(CCmodWheel, modWheel);
+}
+
+void arpRangeDisplay() {
+      if (arpRange == 1) {
+        showCurrentParameterPage("     ONE OCTAVE", "");
+      }
+      if (arpRange == 2) {
+        showCurrentParameterPage("     TWO OCTAVES", "");
+      }
+      if (arpRange == 3) {
+        showCurrentParameterPage("    THREE OCTAVES", "");
+      }
+      if (arpRange == 3) {
+        showCurrentParameterPage("    FOUR OCTAVES", "");
+      }
 }
 
 void updateGlide() {
@@ -1104,6 +1086,23 @@ void updatemultTrig() {
   }
 }
 
+void updatenumberOfVoicesSetting() {
+  if (maxVoices != maxVoicesPREV) {
+
+    midi6CCOut(MIDImaxVoicesSW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    for (int maxi = 1; maxi <= (maxVoices - 2); maxi++) {
+      //midi6CCOut(MIDI_R_SW, 127);
+      delay(500);
+      midi6CCOut(MIDIDownArrow, 127);
+    }
+    //midi6CCOut(MIDI_R_SW, 127);
+    delay(500);
+    midi6CCOut(MIDIEnter, 127);
+    maxVoicesPREV = maxVoices;
+  }
+}
+
 void updatenumberOfVoices() {
   pot = false;
   String myString = "      ";
@@ -1111,12 +1110,10 @@ void updatenumberOfVoices() {
     sr.writePin(NUM_OF_VOICES_LED, HIGH);  // LED on
     maxVoices_timer = millis();
     maxVoices = 2;
-    if (!recallPatchFlag) {
-      myString += String(maxVoices);
-      myString = myString + " VOICES";
-      const char* myChar = myString.c_str();
-      showCurrentParameterPage(myChar, "");
-    }
+    myString += String(maxVoices);
+    myString = myString + " VOICES";
+    const char* myChar = myString.c_str();
+    showCurrentParameterPage(myChar, "");
     midi6CCOut(MIDImaxVoicesSW, 127);
     midi6CCOut(MIDIDownArrow, 127);
     maxVoicesFirstPress++;
@@ -1125,12 +1122,10 @@ void updatenumberOfVoices() {
     if (maxVoices > 16) {
       maxVoices = 2;
     }
-    if (!recallPatchFlag) {
-      myString += String(maxVoices);
-      myString = myString + " VOICES";
-      const char* myChar = myString.c_str();
-      showCurrentParameterPage(myChar, "");
-    }
+    myString += String(maxVoices);
+    myString = myString + " VOICES";
+    const char* myChar = myString.c_str();
+    showCurrentParameterPage(myChar, "");
     midi6CCOut(MIDIDownArrow, 127);
     maxVoicesFirstPress++;
     maxVoices_timer = millis();
@@ -1141,12 +1136,12 @@ void updatemaxVoicesExitSW() {
   pot = false;
   String myString = "      ";
   if (maxVoicesExitSW == 1) {
-    if (!recallPatchFlag) {
-      myString += String(maxVoices);
-      myString = myString + " VOICES";
-      const char* myChar = myString.c_str();
-      showCurrentParameterPage(myChar, "");
-    }
+
+    myString += String(maxVoices);
+    myString = myString + " VOICES";
+    const char* myChar = myString.c_str();
+    showCurrentParameterPage(myChar, "");
+
     midi6CCOut(MIDIEnter, 127);
     maxVoicesFirstPress = 0;
     maxVoicesSW = 0;
@@ -1157,29 +1152,47 @@ void updatemaxVoicesExitSW() {
 }
 
 void updateMonoSetting() {
-  // Serial.print("MonoMODE ");
-  // Serial.println(monoMode);
-  // Serial.print("Mono ");
-  // Serial.println(mono);
   if (monoMode == 1) {
     sr.writePin(MONO_LED, HIGH);  // LED on
     sr.writePin(POLY_LED, LOW);   // LED on
     if (!recallPatchFlag) {
       setMonoModeDisplay();
     }
+
+    if (mono != monoPREV) {
+      midi6CCOut(MIDImonoSW, 127);
+      midi6CCOut(MIDIDownArrow, 127);
+      for (int i = 1; i < mono; i++) {
+        delay(500);
+        midi6CCOut(MIDIDownArrow, 127);
+      }
+      delay(500);
+      midi6CCOut(MIDIEnter, 127);
+      monoPREV = mono;
+      polyPREV = 100;
+    }
   }
 }
 
 void updatePolySetting() {
-  // Serial.print("PolyMODE ");
-  // Serial.println(polyMode);
-  // Serial.print("Poly ");
-  // Serial.println(poly);
   if (polyMode == 1) {
     sr.writePin(POLY_LED, HIGH);  // LED on
     sr.writePin(MONO_LED, LOW);   // LED on
     if (!recallPatchFlag) {
       setPolyModeDisplay();
+    }
+
+    if (poly != polyPREV) {
+      midi6CCOut(MIDIpolySW, 127);
+      midi6CCOut(MIDIDownArrow, 127);
+      for (int i = 1; i < poly; i++) {
+        delay(500);
+        midi6CCOut(MIDIDownArrow, 127);
+      }
+      delay(500);
+      midi6CCOut(MIDIEnter, 127);
+      polyPREV = poly;
+      monoPREV = 100;
     }
   }
 }
@@ -1190,7 +1203,7 @@ void updatemonoSW() {
   if (monoSW == 1 && monoFirstPress == 0) {
     prevmono = mono;
     mono_timer = millis();
-    mono = 0;
+    mono = 1;
     if (!recallPatchFlag) {
       setMonoModeDisplay();
     }
@@ -1199,8 +1212,8 @@ void updatemonoSW() {
     monoFirstPress++;
   } else if (monoSW == 1 && monoFirstPress > 0) {
     mono++;
-    if (mono > 5) {
-      mono = 0;
+    if (mono > 6) {
+      mono = 1;
     }
     if (!recallPatchFlag) {
       setMonoModeDisplay();
@@ -1238,7 +1251,7 @@ void updatepolySW() {
   if (polySW == 1 && polyFirstPress == 0) {
     prevpoly = poly;
     poly_timer = millis();
-    poly = 0;
+    poly = 1;
 
     if (!recallPatchFlag) {
       setPolyModeDisplay();
@@ -1248,8 +1261,8 @@ void updatepolySW() {
     polyFirstPress++;
   } else if (polySW == 1 && polyFirstPress > 0) {
     poly++;
-    if (poly > 3) {
-      poly = 0;
+    if (poly > 4) {
+      poly = 1;
     }
     if (!recallPatchFlag) {
       setPolyModeDisplay();
@@ -1282,51 +1295,51 @@ void updatepolyExitSW() {
 
 
 void setPolyModeDisplay() {
-  if (poly == 0) {
+  if (poly == 1) {
     showCurrentParameterPage("POLY MODE 1 - CYCLIC", "");
   }
-  if (poly == 1) {
+  if (poly == 2) {
     showCurrentParameterPage("POLY MODE 2 - CYCLIC", "    WITH MEMORY");
   }
-  if (poly == 2) {
+  if (poly == 3) {
     showCurrentParameterPage("POLY MODE 3 - RESET", "     TO VOICE 1");
   }
-  if (poly == 3) {
+  if (poly == 4) {
     showCurrentParameterPage("POLY MODE 4 - RESET", "    WITH MEMORY");
   }
 }
 
 void setMonoModeDisplay() {
-  if (mono == 0) {
+  if (mono == 1) {
     showCurrentParameterPage(" MONO MODE 1 - LAST", "   NOTE PRIORITY");
   }
-  if (mono == 1) {
+  if (mono == 2) {
     showCurrentParameterPage(" MONO MODE 2 - LOW", "   NOTE PRIORITY");
   }
-  if (mono == 2) {
+  if (mono == 3) {
     showCurrentParameterPage(" MONO MODE 3 - HIGH", "   NOTE PRIORITY");
   }
-  if (mono == 3) {
+  if (mono == 4) {
     showCurrentParameterPage("UNISON MODE 1 - LAST", "   NOTE PRIORITY");
   }
-  if (mono == 4) {
+  if (mono == 5) {
     showCurrentParameterPage("UNISON MODE 2 - LOW", "   NOTE PRIORITY");
   }
-  if (mono == 5) {
+  if (mono == 6) {
     showCurrentParameterPage("UNISON MODE 3 - HIGH", "   NOTE PRIORITY");
   }
 }
 
 void sendEscapeKey() {
 
-  if ((maxVoices_timer > 0) && (millis() - maxVoices_timer > 5000)) {
+  if ((maxVoices_timer > 0) && (millis() - maxVoices_timer > 3000)) {
     midi6CCOut(MIDIEscape, 127);
     maxVoices_timer = 0;
     maxVoicesFirstPress = 0;
     sr.writePin(NUM_OF_VOICES_LED, LOW);  // LED on
   }
 
-  if ((poly_timer > 0) && (millis() - poly_timer > 5000)) {
+  if ((poly_timer > 0) && (millis() - poly_timer > 3000)) {
     midi6CCOut(MIDIEscape, 127);
     if (polyExitSW == 0) {
       poly = prevpoly;
@@ -1341,7 +1354,7 @@ void sendEscapeKey() {
     }
   }
 
-  if ((mono_timer > 0) && (millis() - mono_timer > 5000)) {
+  if ((mono_timer > 0) && (millis() - mono_timer > 3000)) {
     midi6CCOut(MIDIEscape, 127);
     if (monoExitSW == 0) {
       mono = prevmono;
@@ -1356,21 +1369,21 @@ void sendEscapeKey() {
     }
   }
 
-  if ((arpRange_timer > 0) && (millis() - arpRange_timer > 5000)) {
+  if ((arpRange_timer > 0) && (millis() - arpRange_timer > 3000)) {
     midi6CCOut(MIDIEscape, 127);
     arpRange_timer = 0;
     arpRangeFirstPress = 0;
     sr.writePin(ARP_RANGE_LED, LOW);  // LED on
   }
 
-  if ((arpMode_timer > 0) && (millis() - arpMode_timer > 5000)) {
+  if ((arpMode_timer > 0) && (millis() - arpMode_timer > 3000)) {
     midi6CCOut(MIDIEscape, 127);
     arpMode_timer = 0;
     arpModeFirstPress = 0;
     sr.writePin(ARP_MODE_LED, LOW);  // LED on
   }
 
-  if ((reverbType_timer > 0) && (millis() - reverbType_timer > 5000)) {
+  if ((reverbType_timer > 0) && (millis() - reverbType_timer > 3000)) {
     midi6CCOut(MIDIEscape, 127);
     reverbType_timer = 0;
     reverbTypeFirstPress = 0;
@@ -2105,20 +2118,35 @@ void updatereverbSW() {
   }
 }
 
+void updatereverbType() {
+  if (reverbType != reverbTypePREV) {
+
+    midi6CCOut(MIDIreverbTypeSW, 127);
+    midi6CCOut(MIDIDownArrow, 127);
+    for (int i = 1; i < reverbType; i++) {
+      delay(500);
+      midi6CCOut(MIDIDownArrow, 127);
+    }
+    delay(500);
+    midi6CCOut(MIDIEnter, 127);
+    reverbTypePREV = reverbType;
+  }
+}
+
 void updatereverbTypeSW() {
   pot = false;
   if (reverbTypeSW == 1 && reverbTypeFirstPress == 0) {
     reverbType_timer = millis();
-    reverbType = 0;
+    reverbType = 1;
     sr.writePin(REVERB_TYPE_LED, HIGH);  // LED on
     if (!recallPatchFlag) {
-      if (reverbType == 0) {
+      if (reverbType == 1) {
         showCurrentParameterPage("     ROOM REVERB", "");
       }
-      if (reverbType == 1) {
+      if (reverbType == 2) {
         showCurrentParameterPage("     PLATE REVERB", "");
       }
-      if (reverbType == 2) {
+      if (reverbType == 3) {
         showCurrentParameterPage("     HALL REVERB", "");
       }
     }
@@ -2127,17 +2155,17 @@ void updatereverbTypeSW() {
     reverbTypeFirstPress++;
   } else if (reverbTypeSW == 1 && reverbTypeFirstPress > 0) {
     reverbType++;
-    if (reverbType > 2) {
-      reverbType = 0;
+    if (reverbType > 3) {
+      reverbType = 1;
     }
     if (!recallPatchFlag) {
-      if (reverbType == 0) {
+      if (reverbType == 1) {
         showCurrentParameterPage("     ROOM REVERB", "");
       }
-      if (reverbType == 1) {
+      if (reverbType == 2) {
         showCurrentParameterPage("     PLATE REVERB", "");
       }
-      if (reverbType == 2) {
+      if (reverbType == 3) {
         showCurrentParameterPage("     HALL REVERB", "");
       }
     }
@@ -2151,13 +2179,13 @@ void updatereverbTypeExitSW() {
   pot = false;
   if (reverbTypeExitSW == 1) {
     if (!recallPatchFlag) {
-      if (reverbType == 0) {
+      if (reverbType == 1) {
         showCurrentParameterPage("     ROOM REVERB", "");
       }
-      if (reverbType == 1) {
+      if (reverbType == 2) {
         showCurrentParameterPage("     PLATE REVERB", "");
       }
-      if (reverbType == 2) {
+      if (reverbType == 3) {
         showCurrentParameterPage("     HALL REVERB", "");
       }
     }
@@ -3253,7 +3281,7 @@ void setCurrentPatchData(String data[]) {
   mono = data[41].toInt();
   poly = data[42].toInt();
   glideSW = data[43].toInt();
-  numberOfVoices = data[44].toInt();
+  maxVoices = data[44].toInt();
   octaveDown = data[45].toInt();
   octaveNormal = data[46].toInt();
   octaveUp = data[47].toInt();
@@ -3293,7 +3321,7 @@ void setCurrentPatchData(String data[]) {
   unconditionalContourSW = data[81].toInt();
   returnSW = data[82].toInt();
   reverbSW = data[83].toInt();
-  reverbTypeSW = data[84].toInt();
+  reverbType = data[84].toInt();
   limitSW = data[85].toInt();
   modernSW = data[86].toInt();
   osc3_2 = data[87].toInt();
@@ -3507,12 +3535,12 @@ void setCurrentPatchData(String data[]) {
   updatelowSW();
   updatekeyboardControlSW();
   updateoscSyncSW();
-  updateMonoSetting();
   updatePolySetting();
-  //updatenumberOfVoices();
-  //updatereverbTypeSW();
-  //updatearpRangeSW();
-  //updatearpModeSW();
+  updateMonoSetting();
+  updatenumberOfVoicesSetting();
+  updatereverbType();
+  updatearpRangePreset();
+  updatearpModePreset();
 
   //Patchname
   updatePatchname();
@@ -3528,12 +3556,12 @@ String getCurrentPatchData() {
          + "," + String(reverbDecay) + "," + String(reverbDamp) + "," + String(reverbLevel) + "," + String(arpSpeed) + "," + String(arpRange) + "," + String(lfoDestOsc2) + "," + String(contourOsc3Amt)
          + "," + String(voiceModToFilter) + "," + String(voiceModToPW2) + "," + String(voiceModToPW1) + "," + String(masterTune) + "," + String(masterVolume) + "," + String(lfoInvert) + "," + String(voiceModToOsc2)
          + "," + String(voiceModToOsc1) + "," + String(arpSW) + "," + String(arpHold) + "," + String(arpSync) + "," + String(multTrig) + "," + String(mono) + "," + String(poly)
-         + "," + String(glideSW) + "," + String(numberOfVoices) + "," + String(octaveDown) + "," + String(octaveNormal) + "," + String(octaveUp) + "," + String(chordMode) + "," + String(lfoSaw)
+         + "," + String(glideSW) + "," + String(maxVoices) + "," + String(octaveDown) + "," + String(octaveNormal) + "," + String(octaveUp) + "," + String(chordMode) + "," + String(lfoSaw)
          + "," + String(lfoTriangle) + "," + String(lfoRamp) + "," + String(lfoSquare) + "," + String(lfoSampleHold) + "," + String(lfoKeybReset) + "," + String(wheelDC) + "," + String(lfoDestOsc3)
          + "," + String(lfoDestVCA) + "," + String(lfoDestPW1) + "," + String(lfoDestPW2) + "," + String(osc1_2) + "," + String(osc1_4) + "," + String(osc1_8) + "," + String(osc1_16)
          + "," + String(osc2_16) + "," + String(osc2_8) + "," + String(osc2_4) + "," + String(osc2_2) + "," + String(osc2Saw) + "," + String(osc2Square) + "," + String(osc2Triangle)
          + "," + String(osc1Saw) + "," + String(osc1Square) + "," + String(osc1Triangle) + "," + String(osc3Saw) + "," + String(osc3Square) + "," + String(osc3Triangle) + "," + String(slopeSW)
-         + "," + String(echoSW) + "," + String(releaseSW) + "," + String(keyboardFollowSW) + "," + String(unconditionalContourSW) + "," + String(returnSW) + "," + String(reverbSW) + "," + String(reverbTypeSW)
+         + "," + String(echoSW) + "," + String(releaseSW) + "," + String(keyboardFollowSW) + "," + String(unconditionalContourSW) + "," + String(returnSW) + "," + String(reverbSW) + "," + String(reverbType)
          + "," + String(limitSW) + "," + String(modernSW) + "," + String(osc3_2) + "," + String(osc3_4) + "," + String(osc3_8) + "," + String(osc3_16) + "," + String(ensembleSW)
          + "," + String(lowSW) + "," + String(keyboardControlSW) + "," + String(oscSyncSW) + "," + String(lfoDestPW3) + "," + String(lfoDestFilter) + "," + String(uniDetune) + "," + String(ensembleDepth)
          + "," + String(echoSpread) + "," + String(noise) + "," + String(osc3Level) + "," + String(osc2Level) + "," + String(osc1Level) + "," + String(filterCutoff) + "," + String(emphasis)
