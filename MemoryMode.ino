@@ -283,6 +283,8 @@ void allNotesOff() {
 }
 
 void updatearpModePreset() {
+  Serial.print("Arp Mode ");
+  Serial.println(arpMode);
   if (arpMode != arpModePREV) {
 
     midi6CCOut(MIDIarpModeSW, 127);
@@ -358,6 +360,8 @@ void updatearpModeExitSW() {
 }
 
 void updatearpRangePreset() {
+  Serial.print("Arp Range ");
+  Serial.println(arpRange);
   if (arpRange != arpRangePREV) {
 
     midi6CCOut(MIDIarpRangeSW, 127);
@@ -1172,12 +1176,15 @@ void updateMonoSetting() {
       polyPREV = 100;
     }
   }
+  updatemultTrig();
 }
 
 void updatePolySetting() {
   if (polyMode == 1) {
     sr.writePin(POLY_LED, HIGH);  // LED on
     sr.writePin(MONO_LED, LOW);   // LED on
+    sr.writePin(MULT_TRIG_LED, LOW);   // LED on
+    multTrig = 0;
     if (!recallPatchFlag) {
       setPolyModeDisplay();
     }
@@ -3358,6 +3365,7 @@ void setCurrentPatchData(String data[]) {
   kbTrack = data[118].toInt();
   polyMode = data[119].toInt();
   monoMode = data[120].toInt();
+  arpMode = data[121].toInt();
 
   lfoInitialAmountPREV = map(lfoInitialAmount, 0, 127, 0, 100);
   modWheelPREV = map(modWheel, 0, 127, 0, 100);
@@ -3496,22 +3504,22 @@ void setCurrentPatchData(String data[]) {
   updatelfoDestPW2();
   updatelfoDestPW3();
   updatelfoDestFilter();
-  delay(1);
+
   updateosc1_2();
   updateosc1_4();
   updateosc1_8();
   updateosc1_16();
-  delay(1);
+
   updateosc2_2();
   updateosc2_4();
   updateosc2_8();
   updateosc2_16();
-  delay(1);
+
   updateosc3_2();
   updateosc3_4();
   updateosc3_8();
   updateosc3_16();
-  delay(1);
+
   updateosc1Square();
   updateosc1Saw();
   updateosc1Triangle();
@@ -3537,9 +3545,13 @@ void setCurrentPatchData(String data[]) {
   updateoscSyncSW();
   updatePolySetting();
   updateMonoSetting();
+  //updatemultTrig();
   updatenumberOfVoicesSetting();
+  delay(200);
   updatereverbType();
+  delay(200);
   updatearpRangePreset();
+  delay(200);
   updatearpModePreset();
 
   //Patchname
@@ -3567,7 +3579,7 @@ String getCurrentPatchData() {
          + "," + String(echoSpread) + "," + String(noise) + "," + String(osc3Level) + "," + String(osc2Level) + "," + String(osc1Level) + "," + String(filterCutoff) + "," + String(emphasis)
          + "," + String(vcfDecay) + "," + String(vcfAttack) + "," + String(vcfSustain) + "," + String(vcfRelease) + "," + String(vcaDecay) + "," + String(vcaAttack) + "," + String(vcaSustain)
          + "," + String(vcaRelease) + "," + String(driftAmount) + "," + String(vcaVelocity) + "," + String(vcfVelocity) + "," + String(vcfContourAmount) + "," + String(kbTrack) + "," + String(polyMode)
-         + "," + String(monoMode);
+         + "," + String(monoMode) + "," + String(arpMode);
 }
 
 void checkMux() {

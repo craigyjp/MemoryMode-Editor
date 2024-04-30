@@ -57,11 +57,11 @@ void renderBootUpPage() {
   char testString1[] = "Memory Mode";
   LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberTwo, 5);
   LCD.PCF8574_LCDSendString(testString1);
-  char testString2[] = "Editor";
+  char testString2[] = "Editor V1.2";
   LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberOne, 5);
   LCD.PCF8574_LCDSendString(testString2);
-  LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberOne, 12);
-  LCD.PCF8574_LCDSendString(VERSION);
+  // LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberOne, 12);
+  // LCD.PCF8574_LCDSendString(VERSION);
 
   tft.fillScreen(ST7735_BLACK);
   tft.drawRect(42, 30, 46, 11, ST7735_WHITE);
