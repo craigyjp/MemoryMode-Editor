@@ -8,10 +8,13 @@ int oldSLIDERintensity;
 int learningDisplayNumber = 0;
 int learningNote = 0;
 boolean pot = false;
+boolean chordMemoryWait = false;
+const long interval = 250;
 
 const char* constantString = "        ";
 const char* constantString2 = "";
 
+static unsigned long LCD_timer = 0;
 static unsigned long learn_timer = 0;
 static unsigned long maxVoices_timer = 0;
 static unsigned long arpRange_timer = 0;

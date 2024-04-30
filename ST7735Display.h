@@ -105,6 +105,7 @@ void renderCurrentPatchPage() {
 }
 
 void renderCurrentParameterPage() {
+  LCD_timer = millis();
   switch (state) {
     case PARAMETER:
         LCD.PCF8574_LCDClearLine(LCD.LCDLineNumberOne);

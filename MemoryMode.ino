@@ -191,6 +191,12 @@ void myNoteOn(byte channel, byte note, byte velocity) {
       usbMIDI.sendNoteOn(note, velocity, channel);
     }
   }
+
+  if (chordMemoryWait) {
+    chordMemoryWait = false;
+    sr.writePin(CHORD_MODE_LED, LOW);
+    showCurrentParameterPage("   CHORD MODE ON", "");
+  }
 }
 
 void myNoteOff(byte channel, byte note, byte velocity) {
@@ -229,19 +235,20 @@ void myAfterTouch(byte channel, byte pressure) {
 }
 
 void updateMOOGstyle(int PREVparam, int value, String WhichParameter) {
+  LCD_timer = millis();
   if (WhichParameter.equals(oldWhichParameter)) {
-  char spaces2[] = "   ";
-  LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberOne, 11);
-  LCD.PCF8574_LCDSendString(spaces2);
+    char spaces2[] = "   ";
+    LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberOne, 11);
+    LCD.PCF8574_LCDSendString(spaces2);
   } else {
-  char spaces1[] = "                    ";
-  LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberOne, 0);
-  LCD.PCF8574_LCDSendString(spaces1);
-  LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberTwo, 0);
-  LCD.PCF8574_LCDSendString(spaces1);
-  oldWhichParameter = WhichParameter;
+    char spaces1[] = "                    ";
+    LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberOne, 0);
+    LCD.PCF8574_LCDSendString(spaces1);
+    LCD.PCF8574_LCDGOTO(LCD.LCDLineNumberTwo, 0);
+    LCD.PCF8574_LCDSendString(spaces1);
+    oldWhichParameter = WhichParameter;
   }
-  
+
   String myString = String(PREVparam, DEC);
   if (PREVparam < 10) {
     myString = "00" + myString;
@@ -1369,6 +1376,12 @@ void sendEscapeKey() {
     reverbTypeFirstPress = 0;
     sr.writePin(REVERB_TYPE_LED, LOW);  // LED on
   }
+
+  if ((LCD_timer > 0) && (millis() - LCD_timer > 10000)) {
+    LCD_timer = 0;
+    LCD.PCF8574_LCDClearLine(LCD.LCDLineNumberOne);
+    LCD.PCF8574_LCDClearLine(LCD.LCDLineNumberTwo);
+  }
 }
 
 void updateglideSW() {
@@ -1427,7 +1440,9 @@ void updatechordMode() {
   pot = false;
   if (chordMode == 1) {
     if (!recallPatchFlag) {
-      showCurrentParameterPage("LEARNING CHORD", "");
+      showCurrentParameterPage("   LEARNING CHORD", "");
+      chordMemoryWait = true;
+      learn_timer = millis();
     }
     sr.writePin(CHORD_MODE_LED, HIGH);  // LED on
     midiCCOut(CCchordMode, 127);
@@ -1435,9 +1450,10 @@ void updatechordMode() {
   } else {
     sr.writePin(CHORD_MODE_LED, LOW);  // LED off
     if (!recallPatchFlag) {
-      showCurrentParameterPage("CHORD MODE OFF", "");
+      showCurrentParameterPage("   CHORD MODE OFF", "");
       midiCCOut(CCchordMode, 127);
       midiCCOut(CCchordMode, 0);
+      chordMemoryWait = false;
     }
   }
 }
@@ -4459,20 +4475,19 @@ void checkEncoder() {
 }
 
 void stopLEDs() {
-  // if ((polywave_timer > 0) && (millis() - polywave_timer > 150)) {
-  //   sr.writePin(POLY_WAVE_LED, HIGH);
-  //   polywave_timer = 0;
-  // }
 
-  // if ((vco1wave_timer > 0) && (millis() - vco1wave_timer > 150)) {
-  //   sr.writePin(LEAD_VCO1_WAVE_LED, HIGH);
-  //   vco1wave_timer = 0;
-  // }
+  unsigned long currentMillis = millis();
 
-  // if ((vco2wave_timer > 0) && (millis() - vco2wave_timer > 150)) {
-  //   sr.writePin(LEAD_VCO2_WAVE_LED, HIGH);
-  //   vco2wave_timer = 0;
-  // }
+  if (chordMemoryWait) {
+    if (currentMillis - learn_timer >= interval) {
+      learn_timer = currentMillis;
+      if (sr.readPin(CHORD_MODE_LED) == HIGH) {
+        sr.writePin(CHORD_MODE_LED, LOW);
+      } else {
+        sr.writePin(CHORD_MODE_LED, HIGH);
+      }
+    }
+  }
 }
 
 void loop() {
