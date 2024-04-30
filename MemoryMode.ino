@@ -1,5 +1,5 @@
 /*
-  MemoryMode Editor - Firmware Rev 1.1
+  MemoryMode Editor - Firmware Rev 1.2
 
   Includes code by:
     Dave Benn - Handling MUXs, a few other bits and original inspiration  https://www.notesandvolts.com/2019/01/teensy-synth-part-10-hardware.html
@@ -283,8 +283,7 @@ void allNotesOff() {
 }
 
 void updatearpModePreset() {
-  Serial.print("Arp Mode ");
-  Serial.println(arpMode);
+
   if (arpMode != arpModePREV) {
 
     midi6CCOut(MIDIarpModeSW, 127);
@@ -360,8 +359,7 @@ void updatearpModeExitSW() {
 }
 
 void updatearpRangePreset() {
-  Serial.print("Arp Range ");
-  Serial.println(arpRange);
+
   if (arpRange != arpRangePREV) {
 
     midi6CCOut(MIDIarpRangeSW, 127);
